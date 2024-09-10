@@ -9,23 +9,21 @@ import pandas as pd
 import cartopy.crs as ccrs
 from utils.emulate import *
 from utils.auxiliaryFunctions import *
+import tqdm
 
 parser = argparse.ArgumentParser(description='Run climate model emulation.')
-parser.add_argument('--gcm', type=str, default='noresm')
-parser.add_argument('--rcm', type=str, default='ald63')
 parser.add_argument('--variables', nargs='+', default=['q700'], help='List of variables')
 parser.add_argument('--predictand', type=str, default='pr')
 parser.add_argument('--topology', type=str, default='deepesd')
 parser.add_argument('--approach', type=str, default='MOS-E')
 parser.add_argument('--outputFileName', type=str, default='./predictions/a.nc')
+parser.add_argument('--variables_str', type=str, default='', help='variables string')
 parser.add_argument('--years', type=str, default='')
-parser.add_argument('--scale', type=str, default='True')
+parser.add_argument('--scale', type=bool, default='True')
 parser.add_argument('--bias_correction', type=str, default='False')
 parser.add_argument('--modelPath', type=str, default='')
 args = parser.parse_args()
 
-gcm = args.gcm
-rcm = args.rcm
 variables = args.variables
 predictand = args.predictand
 topology = args.topology
@@ -34,24 +32,36 @@ outputFileName = args.outputFileName
 scale = args.scale
 bias_correction = args.bias_correction
 modelPath = args.modelPath
+variables_str = args.variables_str
 years = args.years
-emulator = gcm + '-ald63'
 
-def reshapeToMa(grid, ntime, nlat, nlon, indLand):
-	if len(grid.shape) == 2:
-		grid = np.expand_dims(grid, axis = 2)
-		vars = 1
-	InnerList=[]
-	for i in range(grid.shape[2]):
-		p = np.full((ntime,nlat*nlon), np.nan)
-		p[:,indLand] = grid[:,:,i]
-		print(p[:,indLand])
-		# a = input()
-		p = p.reshape((ntime,nlat,nlon,1))
-		InnerList.append(p)
-	grid = np.concatenate(InnerList, axis = 3)
-	return grid.squeeze()
+print('===== training settings =====')
+print(f'variables: {variables}')
+print(f'y label: {predictand}')
+print(f'years to predict: {years}')
+print(f'ModelName: {modelPath}')
+print(f'scale: {scale}')
+a = input()
 
+def is_leap_year(year):
+    return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+
+print('===== concat predictand =====')
+predictand_base_path = '/work/moose1108/corrdiff-like/data/02-predictand_TReAD/RAINNC/'
+y_datasets = []
+for year in tqdm.tqdm(range(2001, 2010, 2)):
+    file_path = f'{predictand_base_path}/TReAD_daily_{year}_RAINNC.nc'
+    dataset = xr.open_dataset(file_path)
+    y_datasets.append(dataset)
+y = xr.concat(y_datasets, dim='Day')
+min_lat = y['Lat'].min().item()
+max_lat = y['Lat'].max().item()
+min_lon = y['Lon'].min().item()
+max_lon = y['Lon'].max().item()
+print(f'latitude range: {min_lat}~{max_lat}')
+print(f'longitude range: {min_lon}~{max_lon}')
+
+print('===== concat predictor base data =====')
 base_path = '/work/moose1108/corrdiff-like/data/01-predictor_ERA5/'
 x_datasets = {}
 
@@ -63,49 +73,41 @@ for var in variables:
         monthly_datasets.append(dataset)
     concatenated_dataset = xr.concat(monthly_datasets, dim='time')
     x_datasets[var] = concatenated_dataset
-    print(var)
 x = xr.merge([x_datasets[var] for var in variables])
 
-# x_list = [xr.open_dataset(f'/home/moose1108/corrdiff-like-project/01-predictor_ERA5/q700/2009/ERA5_PRS_q700_2009{i:02}_r1440x721_day.nc') for i in range(1, 13)]
-# x = xr.concat(x_list, dim='time')
-if approach == 'MOS-E':
-    modelEmulator = emulator
-    # modelEmulator = emulator + '-' + rcm
+base_datasets = {}
+for var in variables:
+    monthly_datasets = []
+    for year in tqdm.tqdm(range(2001, 2010, 2)):
+        for month in range(1, 13):
+            file_path = f'{base_path}{var}/{str(year)}/ERA5_PRS_{var}_{str(year)}{month:02}_r1440x721_day.nc'
+            dataset = xr.open_dataset(file_path)
+            if is_leap_year(year) and month == 2:
+                dataset = dataset.sel(time=~((dataset.time.dt.month == 2) & (dataset.time.dt.day == 29)))
+            dataset = dataset.sel(latitude=slice(max_lat, min_lat), longitude=slice(min_lon, max_lon))
+            monthly_datasets.append(dataset)
+    concatenated_dataset = xr.concat(monthly_datasets, dim='time')
+    base_datasets[var] = concatenated_dataset
+base = xr.merge([base_datasets[var] for var in variables])
 
-y = xr.open_dataset('/work/moose1108/corrdiff-like/data/02-predictand_TReAD/RAINNC/TReAD_daily_2011_RAINNC.nc')
-# y = yh.isel(Day=slice(0, 365))
-min_lat = y['Lat'].min().item()
-max_lat = y['Lat'].max().item()
-min_lon = y['Lon'].min().item()
-max_lon = y['Lon'].max().item()
-
-base = x.sel(latitude=slice(max_lat, min_lat), longitude=slice(min_lon, max_lon))
+base = base.sel(latitude=slice(max_lat, min_lat), longitude=slice(min_lon, max_lon))
 base = base.drop_vars('time_bnds')
 x = x.sel(latitude=slice(max_lat, min_lat), longitude=slice(min_lon, max_lon))
 x = x.drop_vars('time_bnds')
-
-# modelPath = './models/RAINNC/' + topology + '-' + modelEmulator + '-' + approach + '.h5'
-# modelPath = './models/RAINNC/' + topology + '-' + predictand + '-' + modelEmulator + '-' + approach + '.h5'
-
-# if years is not None:
-#     base = xr.merge([base.sel(time = base['time.year'] == int(year)) for year in years])
-#     modelPath = '../models/' + topology + '-' + predictand + '-' + modelEmulator + '-' + approach + '-year' + str(len(years)) + '.h5'
 
 if scale is True:
     print('scaling...')
     x = scaleGrid(x, base = base, type = 'standardize', spatialFrame = 'gridbox')
 
-## Loading the cnn model...
-if predictand == 'tas':
+if predictand == 'T2':
     model = tf.keras.models.load_model(modelPath)
     description = {'description': 'air surface temperature (ºC)'}
-elif predictand == 'pr':
+elif predictand == 'RAINNC':
     model = tf.keras.models.load_model(modelPath, custom_objects = {'bernoulliGamma': bernoulliGamma})
     description = {'description': 'total daily precipitation (mm/day)'}
-
+print('===== model structure =====')
 model.summary()
-# a = input()
-## Converting xarray to a numpy array and predict on the test set
+
 x_array = x.to_stacked_array("var", sample_dims = ["latitude", "longitude", "time"]).values
 pred = model.predict(x_array)
 
@@ -115,29 +117,16 @@ if topology == 'deepesd':
     mask.landmask.values[mask.landmask.values == 0] = np.nan
     mask_Onedim = mask.landmask.values.reshape((np.prod(mask.landmask.shape)))
     ind = [i for i in range(len(mask_Onedim)) if mask_Onedim[i] == 1]
-    print(pred.shape)
-    # a = input()
-    pred = reshapeToMa(grid = pred, ntime = x.dims['time'], nlat = mask.dims['Lat'], nlon = mask.dims['Lon'], indLand = ind)
+    pred = reshapeToMap(grid = pred, ntime = x.dims['time'], nlat = mask.dims['Lat'], nlon = mask.dims['Lon'], indLand = ind)
 if topology == 'unet':
     sea = mask.sftlf.values == 0
     pred = np.squeeze(pred)
     pred[:,sea] = np.nan
 
-if predictand == 'pr':
-    ## Loading the reference observation for the occurrence of precipitation ---------------------------
-    # gcm = newdata.split("_")[1].split("-")[0]
-    # yh = xr.open_dataset('../data/pr/pr_' + gcm + '-ald63_historical_1996-2005.nc') #, decode_times = False)
-    # y85 = xr.open_dataset('../data/pr/pr_' + gcm + '-ald63_rcp85_2090-2099.nc') #, decode_times = False)
-    # y = xr.concat([yh,y85], dim = 'time')
+if predictand == 'RAINNC':
     y_bin = binaryGrid(y.RAINNC, condition = 'GE', threshold = 1)
-    ## -------------------------------------------------------------------------------------------------
     ## Prediction on the train set -----------
     base2 = scaleGrid(base, base = base, type = 'standardize', spatialFrame = 'gridbox')
-    # ind_time = np.intersect1d(y.Day.values, base2.time.values)
-    # base2 = base2.sel(time = ind_time)
-    # y = y.sel(time = ind_time)
-    # print(base2)
-    # a = input()
     base_array = base2.to_stacked_array("var", sample_dims = ["longitude", "latitude", "time"]).values
     pred_ocu_train = model.predict(base_array)[:,:,0]
     pred_ocu_train = reshapeToMap(grid = pred_ocu_train, ntime = base2.dims['time'], nlat = mask.dims['Lat'], nlon = mask.dims['Lon'], indLand = ind)
