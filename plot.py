@@ -26,6 +26,7 @@ predict_year = args.predict_year
 plot_path = args.plot_path
 landmask_data = args.landmask_data
 print(f'year: {predict_year}')
+print(f'{model}')
 
 pred_dataset = nc.Dataset(predict_path)
 gt_dataset = nc.Dataset(gt_path)
