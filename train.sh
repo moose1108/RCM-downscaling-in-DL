@@ -1,21 +1,19 @@
 #!/bin/bash
 
-gcm='noresm'
-rcm='ald63'
-variables="q700 t500 u850 v850"
-predictand="T2"
+variables="q700 q850 t500 t850 u200 u850 v200 v850"
+predictand="RAINNC"
 topology="deepesd"
 approach="MOS-E"
-start_year="1991"
-end_year="2010"
+start_year="1981"
+end_year="2020"
 scale=true
 year_range=$((end_year - start_year + 1))
 predictor_data="/work/moose1108/corrdiff-like/data/01-predictor_ERA5/"
 predictand_data="/work/moose1108/corrdiff-like/data/02-predictand_TReAD/${predictand}/"
 variables_str=$(echo $variables | tr -d ' ')
-modelPath="./models/${predictand}/${variables_str}_${start_year}_${end_year}.h5"
+modelPath="./models/${predictand}/${topology}_${variables_str}_${start_year}_${end_year}_3_m.h5"
 landmask_data="/work/moose1108/corrdiff-like/data/02-predictand_TReAD/TReAD_Regrid_2km_landmask.nc"
-loss_path="./plots/loss/${predictand}_${variables_str}_${start_year}_${end_year}.png"
+loss_path="./plots/loss/${predictand}_${topology}_${variables_str}_${start_year}_${end_year}_3_m.png"
 
 python train.py --variables $variables \
                 --predictand $predictand \
