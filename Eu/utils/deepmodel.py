@@ -4,11 +4,11 @@ def deepmodel(topology, predictand, inputShape, outputShape):
 	### deepesd
 	if topology == 'deepesd' or 'noAddVal-deepesd' or 'ta-deepesd' or 'anom-deepesd':
 		l0 = tf.keras.Input(shape = inputShape)
-		l1 = tf.keras.layers.Conv2D(50,[3,3], activation = 'relu')(l0)
-		l2 = tf.keras.layers.Conv2D(25,[3,3], activation = 'relu')(l1)
-		l3 = tf.keras.layers.Conv2D(10,[3,3], activation = 'relu')(l2)
+		l1 = tf.keras.layers.Conv2D(32,[3,3], activation = 'relu')(l0)
+		l2 = tf.keras.layers.Conv2D(64,[3,3], activation = 'relu')(l1)
+		l3 = tf.keras.layers.Conv2D(128,[3,3], activation = 'relu')(l2)
 		l4 = tf.keras.layers.Flatten()(l3)
-		if predictand == 'tas':
+		if predictand == 'T2':
 			l5 = tf.keras.layers.Dense(outputShape)(l4)
 		elif predictand == 'RAINNC':
 			l51 = tf.keras.layers.Dense(outputShape, activation = "sigmoid")(l4)

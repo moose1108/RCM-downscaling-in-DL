@@ -73,7 +73,11 @@ for var in variables:
     monthly_datasets = []
     for year in tqdm.tqdm(range(int(years), int(years)+1)):
         for month in range(1, 13):
-            file_path = f'{base_path}{var}/{str(year)}/ERA5_PRS_{var}_{str(year)}{month:02}_r1440x721_day.nc'
+            if var in ['q700', 'q850', 't500', 't850', 'u200', 'u850', 'v200', 'v850', 'w850']:
+                file_path = f'{base_path}{var}/{str(year)}/ERA5_PRS_{var}_{str(year)}{month:02}_r1440x721_day.nc'
+            else:
+                file_path = f'{base_path}{var}/{str(year)}/ERA5_SFC_{var}_{str(year)}{month:02}_r1440x721_day.nc'
+            # file_path = f'{base_path}{var}/{str(year)}/ERA5_PRS_{var}_{str(year)}{month:02}_r1440x721_day.nc'
             dataset = xr.open_dataset(file_path)
             if is_leap_year(year) and month == 2:
                 dataset = dataset.sel(time=~((dataset.time.dt.month == 2) & (dataset.time.dt.day == 29)))
@@ -99,7 +103,7 @@ new_data_arrays = {var: xr.DataArray(data=data_values[var],
 
 x = xr.Dataset(new_data_arrays)
 
-base = xr.open_dataset(f'/work/moose1108/corrdiff-like/data/{start_year}_{end_year}.nc')
+base = xr.open_dataset(f'/work/moose1108/corrdiff-like/data/1981_2022.nc')
 base = base[variables]
 base = base.sel(latitude=slice(max_lat, min_lat), longitude=slice(min_lon, max_lon))
 x = x.sel(latitude=slice(max_lat, min_lat), longitude=slice(min_lon, max_lon))
@@ -157,7 +161,8 @@ pred = xr.Dataset(
     coords = {'longitude': template_predictand.Lon.values, 'latitude': template_predictand.Lat.values, 'time': x.time.values},
     attrs = description
 )
-pred = pred / 24
+if predictand == "RAINNC":
+    pred = pred / 24
 print(pred)
 
 pred.to_netcdf(outputFileName)

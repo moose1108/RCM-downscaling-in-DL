@@ -1,7 +1,7 @@
 #!/bin/bash
 
-variables="q700 q850 t500 t850 u200 u850 v200 v850"
-predictand='RAINNC'
+variables="q700 q850 t500 t850 u200 u850 v200 v850 tp"
+predictand='T2'
 topology='deepesd'
 approach='MOS-E'
 start_year="1981"

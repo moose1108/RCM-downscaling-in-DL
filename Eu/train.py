@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import tqdm
 import dask.array as dask
-from concurrent.futures import ThreadPoolExecutor
 from utils.deepmodel import *
 from utils.emulate import *
 from utils.auxiliaryFunctions import *
@@ -78,14 +77,19 @@ print(f'latitude range: {min_lat}~{max_lat}')
 print(f'longitude range: {min_lon}~{max_lon}')
 
 print('===== concat predictor =====')
-x = xr.open_dataset(f'/work/moose1108/corrdiff-like/data/{start_year}_{end_year}.nc')
+x = xr.open_dataset(f'/work/moose1108/corrdiff-like/data/1981_2022.nc')
+x = x.sel(time=slice(f'{start_year}-01-01', f'{end_year}-12-31'))
+print(x)
+if 'tp' in variables:
+    x['tp'] = x['tp'] * 24000
 if variables is not None:
 	filtered_x = x[variables]
 
 print("===== scaling =====")
 if scale is True:
 	filtered_x = scaleGrid(filtered_x, base = filtered_x, type = 'standardize', spatialFrame = 'gridbox')
-
+print(y)
+a = input()
 if predictand == 'RAINNC':
     y = y * 24
     y = binaryGrid(y, condition = 'GE', threshold = 1, partial = True)
