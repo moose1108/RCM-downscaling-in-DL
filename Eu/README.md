@@ -1,8 +1,3 @@
-# RCM-downscaling-in-DL
-
-## Introduction
-This is a CNN-based climate data training script that diwnscale ....... The system utilizes ERA5 data as predictors and TReAD data as the predictand. This code is based on the repository from [2024_Bano_Emulators_AIES](https://github.com/SantanderMetGroup/2024_Bano_Emulators_AIES/tree/main).
-
 ## Directory Structure
 ```
 ├── train.sh                  # Bash script for launching training
