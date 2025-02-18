@@ -30,7 +30,7 @@ monthly_rmse_years = {year: [] for year in range(2013, 2023)}
 for year in range(2013, 2023):
     # year = '2022'
 
-    pred_dataset = nc.Dataset('current_max.nc')
+    pred_dataset = nc.Dataset('./pred/model.nc')
     gt_dataset = nc.Dataset(f'/work/moose1108/corrdiff-like/data/02-predictand_TReAD/RAINNC/TReAD_daily_{year}_RAINNC.nc')
     landmask_dataset = nc.Dataset('/work/moose1108/corrdiff-like/data/02-predictand_TReAD/TReAD_Regrid_2km_landmask.nc')
 
@@ -95,6 +95,17 @@ for year in range(2013, 2023):
     overall_rmse = calculate_rmse(rain_masked, gt_rain_masked)
     print(f'Overall average RMSE for {year}: {overall_rmse}')
 
+plt.figure(figsize=(10, 8))
+for year, rmses in monthly_rmse_years.items():
+    plt.plot(range(1, 13), rmses, label=str(year))
+plt.title('Monthly RMSE from 2013 to 2022')
+plt.xlabel('Month')
+plt.ylabel('RMSE')
+plt.xticks(range(1, 13), ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
+plt.yticks((0, 5, 10, 15, 20, 25, 30, 35, 40))
+plt.legend(title='Year')
+plt.grid(True)
+plt.savefig('./figures/monthly_RMSE.png')
 
 # plt.figure(figsize=(10, 8))
 # for year, rmses in monthly_rmse_years.items():

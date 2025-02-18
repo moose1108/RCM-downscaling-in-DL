@@ -9,6 +9,8 @@
 └── models/                   # Stores trained models
 ```
 
+## Results
+![Model Architecture](figures/monthly_RMSE.png)
 
 **Running Scripts**:
 Each script can be executed independently, depending on the stage of the project:

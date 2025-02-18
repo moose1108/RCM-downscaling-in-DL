@@ -1,4 +1,5 @@
 Eu/models/*
 Eu/predictions/*
 NZ/models/*
+NZ/pred/*
 __pycache__
