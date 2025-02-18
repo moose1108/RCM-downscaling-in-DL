@@ -12,6 +12,7 @@ terrain_data="/work/moose1108/corrdiff-like/data/TReAD_wrf_d02_info.nc"
 kernel_size=5
 initial_learning_rate=1e-3
 terrain_enable="F"
+batch_size=64
 
 python train.py --variables $variables \
                 --train_start $train_start \
@@ -26,4 +27,5 @@ python train.py --variables $variables \
                 --terrain_data $terrain_data \
                 --kernel_size $kernel_size \
                 --initial_learning_rate $initial_learning_rate \
-                --terrain_enable $terrain_enable
+                --terrain_enable $terrain_enable \
+                --batch_size $batch_size
