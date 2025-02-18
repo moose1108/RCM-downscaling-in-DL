@@ -178,18 +178,18 @@ def complex_conv(layer_filters=[16, 64, 128], bn=True, padding='same', kernel_si
     concat = tf.keras.layers.Concatenate(axis=-2)([output1, output2, output3])
     model_transfer_train = tf.keras.models.Model(inputs1, concat)
     model_transfer_train.compile(loss=['mse'], optimizer='adam')
-    tf.keras.utils.plot_model(
-        model_transfer_train,
-        to_file="model.png",
-        show_shapes=True,
-        show_dtype=True,
-        show_layer_names=True,
-        rankdir="TB",
-        expand_nested=True,
-        dpi=200,
-        show_layer_activations=True,
-        show_trainable=True,
-    )
+    # tf.keras.utils.plot_model(
+    #     model_transfer_train,
+    #     to_file="model.png",
+    #     show_shapes=True,
+    #     show_dtype=True,
+    #     show_layer_names=True,
+    #     rankdir="TB",
+    #     expand_nested=True,
+    #     dpi=200,
+    #     show_layer_activations=True,
+    #     show_trainable=True,
+    # )
     return model_transfer_train
 
 def contruct_base_conv(x, layer_filters=[50, 32, 16], bn=True, padding='same', kernel_size=3, pooling=True,

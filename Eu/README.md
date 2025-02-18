@@ -12,12 +12,6 @@
 └── plots/loss/               # Stores loss curve images
 ```
 
-## Dependencies
-Ensure that the following Python packages are installed:
-```bash
-pip install xarray tensorflow numpy pandas tqdm dask matplotlib seaborn
-```
-
 ## Parameter Description
 In `train.sh`, the following key variables are defined:
 - `variables`: List of meteorological variables (e.g., `w850 q700 q850 t500`).

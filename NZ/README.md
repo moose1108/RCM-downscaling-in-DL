@@ -1,3 +1,15 @@
+## Directory Structure
+```
+├── train.py                  # Python script for handling the training process
+├── inference.py
+├── src/
+│   ├── losses.py             # Deep learning model structure
+│   ├── models.py             # Model emulation functions
+│   ├── prepare_data.py       # Other auxiliary functions
+└── models/                   # Stores trained models
+```
+
+
 **Running Scripts**:
 Each script can be executed independently, depending on the stage of the project:
 - `python train.py` to train the model.
