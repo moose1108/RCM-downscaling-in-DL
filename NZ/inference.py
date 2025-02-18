@@ -19,7 +19,7 @@ from src.models import train_model, complex_conv, simple_conv, predict, simple_d
 from src.losses import gamma_loss_1d, gamma_mse_metric
 from src.prepare_data import format_features, prepare_training_dataset, create_test_train_split
 
-parser = argparse.ArgumentParser(description="Train a deep learning model for climate data.")
+parser = argparse.ArgumentParser(description="Plot downsclaing results.")
 parser.add_argument('--variables', nargs='+', default=['q700'], help='List of variables')
 parser.add_argument('--train_start', type=str, default='1981-01-01', help='starting day of training')
 parser.add_argument('--train_end', type=str, default='2016-12-31', help='ending day of training')

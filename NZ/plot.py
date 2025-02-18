@@ -3,31 +3,65 @@ import matplotlib.cm as cm
 import xarray as xr
 import netCDF4 as nc
 import numpy as np
+import argparse
 import matplotlib.pyplot as plt
 import pandas as pd
 from src.prepare_data import format_features, prepare_training_dataset, create_test_train_split
 
-config = dict(y = "/work/moose1108/corrdiff-like/data/y_adjust_1981_2022.nc",
-              X = "/work/moose1108/corrdiff-like/data/1981_2022.nc",
-             train_start = "1982-01-01",
-             train_end = "2015-12-31",
-             val_start = "2016-01-01",
-             val_end = "2021-12-31",
-             test_start = "2022-01-01",
-             test_end = "2022-12-31",
-             downscale_variables = ['w850', 'u200', 'u850', 'v200', 'v850', 'tp'])
+parser = argparse.ArgumentParser(description="Train a deep learning model for climate data.")
+parser.add_argument('--prediction_output', type=str, default='model.nc', help='path to prediction directory')
+parser.add_argument('--avg_output', type=str, default='./figures/current_Monthly_Average_Comparison_2013-2022.png', help='10-year monthly avg')
+parser.add_argument('--days_output', type=str, default='model.nc', help='path to prediction directory')
+parser.add_argument('--train_start', type=str, default='1981-01-01', help='starting day of training')
+parser.add_argument('--train_end', type=str, default='2016-12-31', help='ending day of training')
+parser.add_argument('--val_start', type=str, default='2017-01-01', help='starting day of validation')
+parser.add_argument('--val_end', type=str, default='2021-12-31', help='ending day of validation')
+parser.add_argument('--test_start', type=str, default='2022-01-01', help='This slice of data won\'nt be used.')
+parser.add_argument('--test_end', type=str, default='2022-12-31', help='This slice of data won\'nt be used.')
+parser.add_argument('--x_data', type=str, default='/work/moose1108/corrdiff-like/data/1981_2022.nc', help='ending day of validation')
+parser.add_argument('--variables', nargs='+', default=['q700'], help='List of variables')
+parser.add_argument('--selected_days', nargs='+', default=['2022-01-01'], help='List of variables')
+parser.add_argument('--y_data', type=str, default='/work/moose1108/corrdiff-like/data/y_adjust_1981_2022.nc', help='ending day of validation')
+parser.add_argument('--mask_data', type=str, default='/work/moose1108/corrdiff-like/data/02-predictand_TReAD/TReAD_Regrid_2km_landmask.nc', help='land mask data')
+
+args = parser.parse_args()
+prediction_output = args.prediction_output
+variables = args.variables
+train_start = args.train_start
+train_end = args.train_end
+val_start = args.val_start
+val_end = args.val_end
+test_start = args.test_start
+test_end = args.test_end
+x_data = args.x_data
+y_data = args.y_data
+mask_data = args.mask_data
+selected_days = args.selected_days
+avg_output = args.avg_output
+days_output = args.days_output
+
+config = dict(y = y_data,
+              X = x_data,
+             train_start = train_start,
+             train_end = train_end,
+             val_start = val_start,
+             val_end = val_end,
+             test_start = test_start,
+             test_end = test_end,
+             downscale_variables = variables
+)
 
 x_train, x_val, x_test, y_train, y_val, y_test = create_test_train_split(config)
 x_train, x_test, x_val, y_train, y_test, y_val = prepare_training_dataset(x_train, x_val, x_test, y_train, y_val, y_test)
-pred = xr.open_dataset('test9.nc')
-print(pred)
+pred = xr.open_dataset(prediction_output)
+
 gt = y_test.unstack()
-mask = xr.open_dataset("/work/moose1108/corrdiff-like/data/02-predictand_TReAD/TReAD_Regrid_2km_landmask.nc")
+mask = xr.open_dataset(mask_data)
 sea = mask.landmask.values == 0
 gt['pr'].values[:,sea] = np.nan
 pred['RAINNC'].values[:,sea] = np.nan
 
-selected_days = ['2022-10-15', '2022-10-16', '2022-10-17', '2022-10-13', '2022-10-30', '2022-10-31', '2022-07-10', '2022-08-10', '2022-09-01', '2022-10-10', '2022-11-10', '2022-12-10']
+# selected_days =  ['2022-10-15', '2022-10-16', '2022-10-17', '2022-10-13', '2022-10-30', '2022-10-31', '2022-07-10', '2022-08-10', '2022-09-01', '2022-10-10', '2022-11-10', '2022-12-10']
 num_days = len(selected_days)
 standards = [0, 1, 2, 6, 10, 15, 20, 30, 40, 50, 70, 90, 110, 130, 150, 200, 300, 600]#[0, 0.05, 0.1, 0.
 color_map = ['#ffffff','#98ffff','#00ceff','#009aff','#006af7','#2e9c00','#2bff00','#fefe08','#ffcb00','#ff9c00','#fe0005','#c90200','#9d0000','#9a009d','#cf00d7','#ff00f7','#fdcafe']
@@ -64,7 +98,7 @@ for i in range(len(selected_days)):
     bias_plot = ax.contourf(gt_lon, gt_lat, bias, levels=levels, colors=colormap)
     ax.coastlines()
     plt.colorbar(bias_plot, ax=ax, orientation='vertical')
-plt.savefig('temp.png')
+plt.savefig(days_output)
 
 fig, axes = plt.subplots(12, 3, figsize=(20, 60), subplot_kw={'projection': ccrs.PlateCarree()})
 pred['RAINNC'].values[:,sea] = np.nan
@@ -106,7 +140,7 @@ for i in range(12):
     plt.colorbar(bias_plot, ax=ax3, orientation='vertical')
 
 plt.tight_layout()
-plt.savefig('current_Monthly_Average_Comparison_2013-2022.png')
+plt.savefig(avg_output)
 plt.close()
 
 
