@@ -9,7 +9,6 @@ def calculate_mae(predictions, ground_truth):
     valid_mask = ~np.isnan(predictions) & ~np.isnan(ground_truth)
     pred_flat = predictions[valid_mask]
     gt_flat = ground_truth[valid_mask]
-    print(pred_flat.shape)
     mae = np.mean(np.abs(pred_flat - gt_flat))
     return mae
 

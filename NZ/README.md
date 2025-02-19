@@ -65,6 +65,11 @@ In `plot.sh`, the following key variables are defined:
 
 ## Results
 ![Model Architecture](figures/monthly_RMSE.png)
+## Results
+- Evaluation metrics for prediction on 2022:
+    |  | Corr | RMSE | MAE |
+    |----------|----------|----------|----------|
+    | RAINNC   |  0.638  |  9.77  | 3.56 |
 
 **Running Scripts**:
 Each script can be executed independently, depending on the stage of the project:

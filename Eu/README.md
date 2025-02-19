@@ -53,6 +53,14 @@ bash inference.sh
 - After inferencing, the following file is generated:
     - NC file for the model's inference.
 
+## Results
+- Evaluation metrics for prediction on 2022:
+    |  | Corr | RMSE |
+    |----------|----------|----------|
+    | RAINNC   |  0.48  |  8.84  |
+    | T2   |    |    |
+
+
 ## Notes
 - Ensure `train.py` can access the modules inside `utils/`.
 - `predictor_data` and `predictand_data` paths must be correct.
