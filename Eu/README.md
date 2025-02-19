@@ -50,23 +50,10 @@ bash train.sh
 bash inference.sh
 ```
 - This command runs `inference.py` using the variables defined in `inference.sh`. 
-- After inferencing, the following files are generated:
-    - The 
-    - 
-
-## Configuration and Modification
-To modify training parameters, edit `train.sh`, for example:
-```bash
-variables="w850 q700 q850 t500"
-predictand="T2"
-start_year="1990"
-end_year="2020"
-```
+- After inferencing, the following file is generated:
+    - NC file for the model's inference.
 
 ## Notes
 - Ensure `train.py` can access the modules inside `utils/`.
 - `predictor_data` and `predictand_data` paths must be correct.
 - `landmask_data` must match `predictand_data`.
-
-## Contact
-For any inquiries, please contact `moose1108` or the project maintainers.

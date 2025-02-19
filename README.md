@@ -25,3 +25,6 @@ This documentation details the utilization of a CNN-based deep learning script f
 ## References
 - For Eu folder, the code is adapted from [2024_Bano_Emulators_AIES](https://github.com/SantanderMetGroup/2024_Bano_Emulators_AIES/tree/main).
 - For NZ folder, the code is adapted from [high-resolution-downscaling](https://github.com/nram812/high-resolution-downscaling). 
+
+## My Work
+Find my progress here: [Progress Check](https://docs.google.com/presentation/d/1TNbWKhwYOzwr6m2o73kGC1Jovkl8Xe9D/edit#slide=id.g32cf0b084e1_0_5)
