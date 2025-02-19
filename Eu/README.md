@@ -55,10 +55,10 @@ bash inference.sh
 
 ## Results
 - Evaluation metrics for prediction on 2022:
-    |  | Corr | RMSE |
-    |----------|----------|----------|
-    | RAINNC   |  0.48  |  8.84  |
-    | T2   |    |    |
+    |  | Corr | RMSE | MAE |
+    |----------|----------|----------|----------|
+    | RAINNC   |  0.48  |  8.84  | 4.49 |
+    | T2   |  0.994  |  0.701  | 0.573 |
 
 
 ## Notes
