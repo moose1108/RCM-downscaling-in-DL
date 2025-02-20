@@ -3,8 +3,8 @@ This documentation details the utilization of a CNN-based deep learning script f
 
 ## Directory Structure
 ```
-├── Eu/
-├── NZ/
+├── Eu/                 # codes adapted from 2024_Bano_Emulators_AIES
+├── NZ/                 # codes adapted from high-resolution-downscaling
 ├── .gitignore
 ├──README.md
 └── environment.yml

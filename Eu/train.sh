@@ -8,12 +8,12 @@ start_year="1981"
 end_year="2020"
 scale=true
 year_range=$((end_year - start_year + 1))
-predictor_data="/work/moose1108/corrdiff-like/data/01-predictor_ERA5/"
 predictand_data="/work/moose1108/corrdiff-like/data/02-predictand_TReAD/${predictand}/"
 variables_str=$(echo $variables | tr -d ' ')
 modelPath="./models/${predictand}/${topology}_${variables_str}_${start_year}_${end_year}_3_b.h5"
 landmask_data="/work/moose1108/corrdiff-like/data/02-predictand_TReAD/TReAD_Regrid_2km_landmask.nc"
 loss_path="./plots/loss/${predictand}_${topology}_${variables_str}_${start_year}_${end_year}_3_b.png"
+x_data="/work/moose1108/corrdiff-like/data/1981_2022.nc"
 
 python train.py --variables $variables \
                 --predictand $predictand \
@@ -24,7 +24,7 @@ python train.py --variables $variables \
                 --modelPath $modelPath \
                 --variables_str $variables_str \
                 --scale $scale \
-                --predictor_data $predictor_data \
+                --x_data $x_data \
                 --predictand_data $predictand_data \
                 --landmask_data $landmask_data \
                 --loss_path $loss_path

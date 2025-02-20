@@ -2,7 +2,7 @@
 
 predict_year=2022
 model="deepesd_q700q850t500t850u200u850v200v850tp_1981_2020_${predict_year}_3_b"
-predictand="RAINNC"
+predictand="T2"
 predict_path="/home/moose1108/corrdiff-like-project/RCM-downscaling-in-DL/Eu/predictions/${predictand}/${model}.nc"
 gt_path="/work/moose1108/corrdiff-like/data/02-predictand_TReAD/${predictand}/TReAD_daily_${predict_year}_${predictand}.nc"
 plot_path="./plots/visualization/${model}_${predictand}_${predict_year}.png"

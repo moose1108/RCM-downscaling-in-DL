@@ -24,6 +24,11 @@ parser.add_argument('--years', type=str, default='')
 parser.add_argument('--scale', type=bool, default='True')
 parser.add_argument('--bias_correction', type=str, default='False')
 parser.add_argument('--modelPath', type=str, default='')
+parser.add_argument('--predictand_base', type=str, default='', help='path to TReAD')
+parser.add_argument('--predictor_base', type=str, default='', help='path to ERA5')
+parser.add_argument('--x_data', type=str, default='/work/moose1108/corrdiff-like/data/1981_2022.nc', help='path to self-constructed ERA5')
+parser.add_argument('--landmask_data', type=str, default='/work/moose1108/corrdiff-like/data/02-predictand_TReAD/TReAD_Regrid_2km_landmask.nc', help='path to landmask data')
+parser.add_argument('--template_predictand', type=str, help='just pick a year of TreAD data')
 args = parser.parse_args()
 
 variables = args.variables
@@ -38,6 +43,12 @@ bias_correction = args.bias_correction
 modelPath = args.modelPath
 variables_str = args.variables_str
 years = args.years
+predictand_base = args.predictand_base
+predictor_base = args.predictor_base
+x_data = args.x_data
+landmask_data = args.landmask_data
+template_predictand = args.template_predictand
+a = xr.open_dataset(x_data)
 
 print('===== training settings =====')
 print(f'variables: {variables}')
@@ -50,7 +61,7 @@ def is_leap_year(year):
     return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
 
 print('===== concat predictand =====')
-predictand_base_path = f'/work/moose1108/corrdiff-like/data/02-predictand_TReAD/{predictand}/'
+predictand_base_path = predictand_base + predictand + '/'
 yearly_ys = []
 for year in tqdm.tqdm(range(int(start_year), int(end_year)+1)):
     file_path = f'{predictand_base_path}TReAD_daily_{year}_{predictand}.nc'
@@ -65,7 +76,6 @@ print(f'latitude range: {min_lat}~{max_lat}')
 print(f'longitude range: {min_lon}~{max_lon}')
 
 print('===== concat predictor base data =====')
-base_path = '/work/moose1108/corrdiff-like/data/01-predictor_ERA5/'
 
 data_values = {var: [] for var in variables}
 coordinates = {'time': [], 'latitude': None, 'longitude': None}
@@ -74,10 +84,10 @@ for var in variables:
     for year in tqdm.tqdm(range(int(years), int(years)+1)):
         for month in range(1, 13):
             if var in ['q700', 'q850', 't500', 't850', 'u200', 'u850', 'v200', 'v850', 'w850']:
-                file_path = f'{base_path}{var}/{str(year)}/ERA5_PRS_{var}_{str(year)}{month:02}_r1440x721_day.nc'
+                file_path = f'{predictor_base}{var}/{str(year)}/ERA5_PRS_{var}_{str(year)}{month:02}_r1440x721_day.nc'
             else:
-                file_path = f'{base_path}{var}/{str(year)}/ERA5_SFC_{var}_{str(year)}{month:02}_r1440x721_day.nc'
-            # file_path = f'{base_path}{var}/{str(year)}/ERA5_PRS_{var}_{str(year)}{month:02}_r1440x721_day.nc'
+                file_path = f'{predictor_base}{var}/{str(year)}/ERA5_SFC_{var}_{str(year)}{month:02}_r1440x721_day.nc'
+            # file_path = f'{predictor_base}{var}/{str(year)}/ERA5_PRS_{var}_{str(year)}{month:02}_r1440x721_day.nc'
             dataset = xr.open_dataset(file_path)
             if is_leap_year(year) and month == 2:
                 dataset = dataset.sel(time=~((dataset.time.dt.month == 2) & (dataset.time.dt.day == 29)))
@@ -103,7 +113,8 @@ new_data_arrays = {var: xr.DataArray(data=data_values[var],
 
 x = xr.Dataset(new_data_arrays)
 
-base = xr.open_dataset(f'/work/moose1108/corrdiff-like/data/1981_2022.nc')
+base = xr.open_dataset(x_data)
+base = base.sel(time=(base['time'].dt.year >= 1981) & (base['time'].dt.year <= 2020))
 base = base[variables]
 base = base.sel(latitude=slice(max_lat, min_lat), longitude=slice(min_lon, max_lon))
 x = x.sel(latitude=slice(max_lat, min_lat), longitude=slice(min_lon, max_lon))
@@ -125,7 +136,7 @@ x_array = x.to_stacked_array("var", sample_dims = ["latitude", "longitude", "tim
 pred = model.predict(x_array)
 
 ## Reshaping the prediction to a latitude-longitude grid
-mask = xr.open_dataset('/work/moose1108/corrdiff-like/data/02-predictand_TReAD/TReAD_Regrid_2km_landmask.nc')
+mask = xr.open_dataset(landmask_data)
 if topology == 'deepesd':
     mask.landmask.values[mask.landmask.values == 0] = np.nan
     mask_Onedim = mask.landmask.values.reshape((np.prod(mask.landmask.shape)))
@@ -155,7 +166,7 @@ if predictand == 'RAINNC':
     pred = pred_bin * pred_amo
     pred = pred.values
 
-template_predictand = xr.open_dataset('/work/moose1108/corrdiff-like/data/02-predictand_TReAD/RAINNC/TReAD_daily_2009_RAINNC.nc')
+template_predictand = xr.open_dataset(template_predictand)
 pred = xr.Dataset(
     data_vars = {predictand: (['time','latitude','longitude'], pred)},
     coords = {'longitude': template_predictand.Lon.values, 'latitude': template_predictand.Lat.values, 'time': x.time.values},

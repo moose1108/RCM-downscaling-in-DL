@@ -23,7 +23,7 @@ parser.add_argument('--end_year', type=str, default='', help='end year')
 parser.add_argument('--modelPath', type=str, default='', help='model path')
 parser.add_argument('--variables_str', type=str, default='', help='variables string')
 parser.add_argument('--scale', type=bool, help='scale')
-parser.add_argument('--predictor_data', type=str, default='', help='Path to predictors')
+parser.add_argument('--x_data', type=str, default='/work/moose1108/corrdiff-like/data/1981_2022.nc', help='path to self-constructed ERA5')
 parser.add_argument('--predictand_data', type=str, default='', help='Path to predictands')
 parser.add_argument('--landmask_data', type=str, default='', help='Path to landmask')
 parser.add_argument('--loss_path', type=str, default='', help='loss_path')
@@ -41,7 +41,7 @@ end_year = args.end_year
 modelPath = args.modelPath
 variables_str = args.variables_str
 scale = args.scale
-predictor_data = args.predictor_data
+x_data = args.x_data
 predictand_data = args.predictand_data
 landmask_data = args.landmask_data
 loss_path = args.loss_path
@@ -77,7 +77,7 @@ print(f'latitude range: {min_lat}~{max_lat}')
 print(f'longitude range: {min_lon}~{max_lon}')
 
 print('===== concat predictor =====')
-x = xr.open_dataset(f'/work/moose1108/corrdiff-like/data/1981_2022.nc')
+x = xr.open_dataset(x_data)
 x = x.sel(time=slice(f'{start_year}-01-01', f'{end_year}-12-31'))
 print(x)
 if 'tp' in variables:
@@ -89,7 +89,7 @@ print("===== scaling =====")
 if scale is True:
 	filtered_x = scaleGrid(filtered_x, base = filtered_x, type = 'standardize', spatialFrame = 'gridbox')
 print(y)
-a = input()
+
 if predictand == 'RAINNC':
     y = y * 24
     y = binaryGrid(y, condition = 'GE', threshold = 1, partial = True)

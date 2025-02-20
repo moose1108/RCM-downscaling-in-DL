@@ -12,6 +12,11 @@ outputFileName="./predictions/${predictand}/${topology}_${variables_str}_${start
 scale=True
 bias_correction='False'
 modelPath="./models/${predictand}/${topology}_${variables_str}_${start_year}_${end_year}_3_b.h5"
+predictand_base="/work/moose1108/corrdiff-like/data/02-predictand_TReAD/"
+predictor_base="/work/moose1108/corrdiff-like/data/01-predictor_ERA5/"
+x_data="/work/moose1108/corrdiff-like/data/1981_2022.nc"
+landmask_data="/work/moose1108/corrdiff-like/data/02-predictand_TReAD/TReAD_Regrid_2km_landmask.nc"
+template_predictand="/work/moose1108/corrdiff-like/data/02-predictand_TReAD/RAINNC/TReAD_daily_2009_RAINNC.nc"
 
 python inference.py --variables $variables \
                         --predictand $predictand \
@@ -24,4 +29,9 @@ python inference.py --variables $variables \
                         --scale $scale \
                         --bias_correction $bias_correction \
                         --variables_str $variables_str \
-                        --modelPath $modelPath
+                        --modelPath $modelPath \
+                        --predictand_base $predictand_base \
+                        --predictor_base $predictor_base \
+                        --x_data $x_data \
+                        --landmask_data $landmask_data \
+                        --template_predictand $template_predictand
