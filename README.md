@@ -21,6 +21,13 @@ This documentation details the utilization of a CNN-based deep learning script f
     ```bash
     conda env create -f environment.yml
     ```
+## Predictions
+- In the directory `/work/moose1108/corrdiff-like/data/preds`. 
+    - `T2_deepesd_q700q850t500t850u200u850v200v850tp_1981_2020_2021_3_b.nc ` and `T2_deepesd_q700q850t500t850u200u850v200v850tp_1981_2020_2022_3_b.nc ` are from Eu (T2).
+    - `deepesd_q700q850t500t850u200u850v200v850tp_1981_2020_2022_3_b.nc` is from Eu (RAINNC).
+    - `model.nc` is from NZ.
+- The datasets used for training can be found in `/work/moose1108/corrdiff-like/data`.
+
 
 ## References
 - For Eu folder, the code is adapted from [2024_Bano_Emulators_AIES](https://github.com/SantanderMetGroup/2024_Bano_Emulators_AIES/tree/main).
